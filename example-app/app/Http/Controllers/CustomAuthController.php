@@ -1,10 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
+use Hash;
+use Session;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use DB;
 
 //Unknow
 class CustomAuthController extends Controller
@@ -39,8 +40,11 @@ class CustomAuthController extends Controller
     {
         $request->validate([
             'name' => 'required',
+            'phone' => 'required|max:10',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
+            'photo' => 'required',
+            
         ]);
 
         $data = $request->all();
@@ -54,6 +58,8 @@ class CustomAuthController extends Controller
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
+            'phone' => $data['phone'],
+            'photo' => $data['photo'],
             'password' => Hash::make($data['password'])
         ]);
     }
@@ -72,5 +78,18 @@ class CustomAuthController extends Controller
         Auth::logout();
 
         return Redirect('login');
+    }
+
+    public function user(){
+        $users = DB::table('users')->paginate(3);
+
+        return view('auth.user', ['users' => $users]);
+    }
+
+    public function userDetail(Request $request){
+        $user = User::find($request->id);
+        return view('auth.userDetail',array(
+            "user"=>$user
+        ));
     }
 }
